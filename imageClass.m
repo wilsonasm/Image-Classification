@@ -11,6 +11,8 @@
 close all; clear;
 inFile = 'C:/Users/Lobo/Documents/NCAT/Research/Image_Classification/experiment/experiment_small.analysis.h5';
 
+
+
 occupancy_matrix = h5read(inFile,'/track_occupancy');
 
 tracks_matrix = h5read(inFile,'/tracks');
