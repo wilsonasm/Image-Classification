@@ -1,7 +1,7 @@
 %% Image Classification
 %   In this matlab code we will be taking the data gathered from SLEAP and 
 %   plotting to visualize our results. This code will produce a graph in
-%   terms of positions for each instance and sa graph of its relative angle.
+%   terms of positions for each instance and a graph of its relative angle.
 %   We will also be graphing the velocity of the instance to find any
 %   correlations between velocity and angle of head.
 %
@@ -9,38 +9,46 @@
 
 %% Data Anaylsis
 close all; clear;
-inFile = 'C:/Users/Lobo/Documents/NCAT/Research/Image_Classification/experiment/experiment_small.analysis.h5';
+inFile = 'experiment_small.analysis.h5';
+
+% The analysis HDF5 file has these datasets:
+% ?track_occupancy? (shape: tracks * frames): Provides information on 
+%                               tracks in each frame.
+% ?tracks? (shape: frames * nodes * 2 * tracks): Provides the xy position
+% of each node of each track in each frame. Node = body part; track =
+% instance/animal;
+% ?track_names? (shape: tracks): Name of each track
+% ?node_names? (shape: nodes): Name of each node (body part)
 
 occupancy_matrix = h5read(inFile,'/track_occupancy');
-
 tracks_matrix = h5read(inFile,'/tracks');
-% tracks_matrix is a 4D matrix labeled as such:
-% [totalFrames, nodes , pos, tracks]
+track_names = h5read(inFile,'/track_names');
+node_names = h5read(inFile,'/node_names');
 
-height = 1080;
-width = 1920;
-matrix_param = size(tracks_matrix);
+% We are mainly interested in the tracks_matrix. This is a 4D matrix 
+% labeled as such [totalFrames, nodes , xyposition, tracks]
 
-totalFrames = matrix_param(1); % the amount of frames the vurrent video has
-numNodes = matrix_param(2); % each instance has x amount of nodes
-position = matrix_param(3); % 2D x,y for each instance
-numTracks = matrix_param(4); % track that was determined by inferences
+height = 1080;  % How do we determine these?
+width = 1920;   % How do we determine these?
 
-numInstances = 1;%size(tracks_matrix,3);
-numFrames = size(tracks_matrix,1);
+[totalFrames, numNodes, position, numTracks] = size(tracks_matrix);
+% totalFrames = The number of frames in the video.
+% numNodes = Number of nodes in each instance.
+% position = 2D x,y position for each node ??
+% numTracks = Number of tracks that were identified
 
 runFrames = 201;
 lookAtTrack = 1;
 determineTracks = 5;
 
-%% Tracking Solution ==============================================================================================================
+%% Tracking Solution ======================================================
 
 %to compute our own tracking determined by relative positions
 selfTrack = nan(runFrames,2,2,determineTracks);
 
 %distanceFrom = nan(numTracks,numTracks);
 selfTrack(1,:,:,:) = tracks_matrix(1,1:2,:,1:determineTracks);
-time = 1:runFrames;
+timeSequence = 1:runFrames;
 
 for iterTrack = 1:determineTracks %iterate through each track for identify position for each frame
     for iterFrame = 2:runFrames %iterate through each frame to find the minimum distance
@@ -57,15 +65,15 @@ for iterTrack = 1:determineTracks %iterate through each track for identify posit
         instance = find(distanceFrom == min(distanceFrom));
         nextPosition = tracks_matrix(iterFrame,1:2,:,instance);
 
-       %selfTrack(iterFrame,:,:,iterTrack) = nextPosition;
+%        selfTrack(iterFrame,:,:,iterTrack) = nextPosition;
     end
 end
 
 %% Plotting for visuals
 % trackFig = figure();
-% time = 1:runFrames;
+% timeSequence = 1:runFrames;
 % for iterTrack = lookAtTrack:determineTracks
-%     plot3(time,selfTrack(1:runFrames,1,1,iterTrack),selfTrack(1:runFrames,1,2,iterTrack), '<-');
+%     plot3(timeSequence,selfTrack(1:runFrames,1,1,iterTrack),selfTrack(1:runFrames,1,2,iterTrack), '<-');
 %     hold on;
 % end
 % xlabel('time');
@@ -78,13 +86,13 @@ end
 
 %% Plotting SLEAP Tracking
 sleapFig = figure();
-time = 1:runFrames;
+timeSequence = 1:runFrames;
 for iterTrack = lookAtTrack:determineTracks
     if(find(isnan(tracks_matrix(:,1,1,iterTrack))))
         hole = find(isnan(tracks_matrix(:,1,1,iterTrack)));
         tracks_matrix(hole(1):end,1,1,iterTrack) = nan;
     end
-    plot3(time,tracks_matrix(1:runFrames,1,1,iterTrack),tracks_matrix(1:runFrames,1,2,iterTrack), '<-');
+    plot3(timeSequence,tracks_matrix(1:runFrames,1,1,iterTrack),tracks_matrix(1:runFrames,1,2,iterTrack), '<-');
     hold on;
 end
 
@@ -160,7 +168,7 @@ end
 
 %% Cross Correlation SLEAP =======================================================================================================================
 % need to do the cross correlation with a lag of
-% (-numFrames+1):(numFrames-1)
+% (-totalFrames+1):(totalFrames-1)
 cor_s = zeros(401,determineTracks);
 lag = zeros(1,determineTracks);
 for iterTrack = 1:determineTracks
@@ -213,7 +221,7 @@ angleDiffSTDMean = mean(mean(angleDiffSTD(~isnan(angleDiffSTD))));
 
 angleDiffPlot = figure();
 for iterTrack = 1:determineTracks
-    plot(time,abs((angleDiffMin(:,iterTrack))));
+    plot(timeSequence,abs((angleDiffMin(:,iterTrack))));
     hold on;
 end
 
@@ -247,7 +255,7 @@ for iterTrack = 1:determineTracks
 end
 
 for iterTrack = 1:determineTracks
-    plot(time,abDiffAngle(:,iterTrack), 'o');
+    plot(timeSequence,abDiffAngle(:,iterTrack), 'o');
     hold on;
 end
 
@@ -277,9 +285,9 @@ stdArray = std(angleOfheadSLEAP,0,1);
 
 %% Plotting angle of head
 angleFig = figure();
-time = 1:runFrames;
+timeSequence = 1:runFrames;
 for iterTrack = lookAtTrack:determineTracks
-    plot(time,angleOfhead(1:runFrames,iterTrack),'-');
+    plot(timeSequence,angleOfhead(1:runFrames,iterTrack),'-');
     hold on;
 end
 xlabel('Time');
@@ -290,9 +298,9 @@ axis([0 runFrames -200 200]);
 
 %% Plotting angle of head from SLEAP
 angleSLEAPFig = figure();
-time = 1:runFrames;
+timeSequence = 1:runFrames;
 for iterTrack = lookAtTrack:determineTracks
-    plot(time,angleOfheadSLEAP(1:runFrames,iterTrack),'-');
+    plot(timeSequence,angleOfheadSLEAP(1:runFrames,iterTrack),'-');
     hold on;
 end
 xlabel('Time');
@@ -328,9 +336,9 @@ axis([0 runFrames -200 200]);
 
 %% Plotting Dir SLEAP
 dirSLEAPFig = figure();
-time = 1:runFrames;
+timeSequence = 1:runFrames;
 for iterTrack = lookAtTrack:determineTracks
-    plot(time,dirSLEAP(1:runFrames,iterTrack),'-');
+    plot(timeSequence,dirSLEAP(1:runFrames,iterTrack),'-');
     hold on;
 end
 xlabel('time');
