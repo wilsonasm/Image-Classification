@@ -31,11 +31,12 @@ figure;
 hold on;
 
 for ii = 1:NInstance
-    plot(squeeze(frameData(:,1,ii)),squeeze(frameData(:,2,ii)),'.-', 'MarkerSize',10, 'LineWidth',2);
-    plot(squeeze(frameData(1,1,ii)),squeeze(frameData(1,2,ii)),'.', 'MarkerSize',20, 'LineWidth',2);
-    if ~isnan(max(max(squeeze(frameData(:,:,ii)))))
+	if ~isnan(max(max(squeeze(frameData(:,:,ii)))))
         NIdentifiedInstances = NIdentifiedInstances + 1;
     end
+    plot(squeeze(frameData(:,1,ii)),squeeze(frameData(:,2,ii)),'.-', 'MarkerSize',10, 'LineWidth',2);
+    plot(squeeze(frameData(1,1,ii)),squeeze(frameData(1,2,ii)),'.', 'MarkerSize',20, 'LineWidth',2);
+    text(squeeze(frameData(1,1,ii))+10,squeeze(frameData(1,2,ii))+10, num2str(NIdentifiedInstances));
 end
 
 box on;
