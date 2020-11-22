@@ -1,7 +1,7 @@
-function frameInfo = findFrameInfo(trackMatrix, frameNumber)
-%function frameInfo = findFrameInfo(trackMatrix, frameNumber)
+function frameInfo = getFrameInfo(trackMatrix, frameNumber)
+%function frameInfo = getFrameInfo(trackMatrix, frameNumber)
 %
-% Example call frameInfo = findFrameInfo(track_Matrix, 1);
+% Example call frameInfo = getFrameInfo(track_Matrix, 1);
 %
 % This function finds the head-body angle with respect to the x axis.
 %
