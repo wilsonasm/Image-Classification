@@ -13,5 +13,6 @@ in the video.
 Missing: A tutorial to create .hd5 files from .avi files using sleap. The 
 .hd5 files is used for analysis using MATLAB.
 
-Written by Markus Wilson Unknown date
-Modified by Vijay Singh Nov 17 2020.
+Written by: Markus Wilson Unknown date.
+
+Modified by: Vijay Singh Nov 17 2020.
