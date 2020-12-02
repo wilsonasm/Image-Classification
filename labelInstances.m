@@ -53,12 +53,20 @@ for iterFrames = 2:totalFrames
     for iterInstances = 1 : NIdentifiedInstances
         distances = sum((squeeze(positionsLastFrame(1,:,:)) - ...
                             squeeze(positionsThisFrame(1,:,iterInstances))').^2);
-        [minDistance, minPosition] = min(distances);
+        [minDistance, minPosition] = sort(distances);
         
-        if minDistance < proximityRadius^2
-            videoInfo.labels{iterFrames}(iterInstances) = videoInfo.labels{iterFrames-1}(minPosition);
-            zz = squeeze(videoInfo.positions{iterFrames}(1,:,iterInstances) - videoInfo.positions{iterFrames-1}(1,:,minPosition));
-            videoInfo.motionAngle{iterFrames}(iterInstances) = angle(zz(1)+1i*zz(2));
+        if minDistance(1) < proximityRadius^2
+            if isempty(find(videoInfo.labels{iterFrames}(1:iterInstances) == videoInfo.labels{iterFrames-1}(minPosition(1))))
+                labelIndex = minPosition(1);
+                videoInfo.labels{iterFrames}(iterInstances) = videoInfo.labels{iterFrames-1}(labelIndex);
+                zz = squeeze(videoInfo.positions{iterFrames}(1,:,iterInstances) - videoInfo.positions{iterFrames-1}(1,:,labelIndex));
+                videoInfo.motionAngle{iterFrames}(iterInstances) = angle(zz(1)+1i*zz(2));
+            elseif minDistance(2) < proximityRadius^2
+                labelIndex = minPosition(2);
+                videoInfo.labels{iterFrames}(iterInstances) = videoInfo.labels{iterFrames-1}(labelIndex);
+                zz = squeeze(videoInfo.positions{iterFrames}(1,:,iterInstances) - videoInfo.positions{iterFrames-1}(1,:,labelIndex));
+                videoInfo.motionAngle{iterFrames}(iterInstances) = angle(zz(1)+1i*zz(2));
+            end
         end
     end
     unlabeledInstances = find(videoInfo.labels{iterFrames}==0);
